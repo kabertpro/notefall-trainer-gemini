@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOTEFALL TRAINER | Entrenador Musical</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.28/build/Midi.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pitchy@4.0.0/dist/pitchy.min.js"></script>
+</head>
+<body>
+
+    <div id="splash-screen" class="screen active">
+        <div class="particles"></div>
+        <h1 class="neon-text">NOTEFALL TRAINER</h1>
+        <h2>Entrenador de Voz e Instrumentos por Micrófono</h2>
+        <p>Kabert Studio - LMKE</p>
+        <button id="skip-splash" class="btn-small">Omitir</button>
+    </div>
+
+    <div id="main-menu" class="screen">
+        <h1 class="neon-text">MENÚ PRINCIPAL</h1>
+        <div class="menu-buttons">
+            <button id="btn-start" class="btn">Iniciar Entrenamiento</button>
+            <input type="file" id="midi-upload" accept=".mid,.midi" style="display: none;">
+            <button id="btn-load-midi" class="btn">Cargar Archivo MIDI</button>
+            <button id="btn-config" class="btn">Configuración</button>
+            <button id="btn-stats" class="btn">Estadísticas</button>
+            <button id="btn-credits" class="btn">Créditos</button>
+        </div>
+        <div id="track-info" class="info-panel hidden">
+            <h3>Canción Cargada: <span id="song-name">Ninguna</span></h3>
+        </div>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <div class="hud">
+            <div class="score-panel">
+                Puntaje: <span id="score">0</span> | Combo: <span id="combo">0</span>
+            </div>
+            <div class="tuner-panel">
+                <div class="tuner-gauge">
+                    <div id="tuner-needle"></div>
+                </div>
+                <div class="tuner-text">
+                    Nota: <span id="current-note">--</span> | <span id="cents-dev">0</span> cents
+                </div>
+            </div>
+            <div class="feedback" id="feedback-text"></div>
+        </div>
+        <canvas id="game-canvas"></canvas>
+        <button id="btn-exit-game" class="btn-small">Salir</button>
+    </div>
+
+    <div id="credits-screen" class="screen">
+        <h2 class="neon-text">CRÉDITOS</h2>
+        <p><strong>Desarrollo y Dirección:</strong> Kabert Studio - LMKE</p>
+        <p><strong>Equipo de Producción y Testing:</strong><br>
+        Cielo Imaña<br>
+        Luan Ortiz<br>
+        Eithan Herrera<br>
+        Jair Coyo</p>
+        <button id="btn-back-credits" class="btn">Volver</button>
+    </div>
+
+    <script src="js/stats.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/midi.js"></script>
+    <script src="js/graphics.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
