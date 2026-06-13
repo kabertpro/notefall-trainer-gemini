@@ -1,73 +1,309 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NOTEFALL TRAINER | Entrenador Musical</title>
-    <link rel="stylesheet" href="css/style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.28/build/Midi.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/pitchy@4.0.0/dist/pitchy.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="screen-orientation" content="landscape" />
+  <title>NoteFall Trainer – Kabert Studio</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
 </head>
 <body>
 
-    <div id="splash-screen" class="screen active">
-        <div class="particles"></div>
-        <h1 class="neon-text">NOTEFALL TRAINER</h1>
-        <h2>Entrenador de Voz e Instrumentos por Micrófono</h2>
-        <p>Kabert Studio - LMKE</p>
-        <button id="skip-splash" class="btn-small">Omitir</button>
+<!-- ══════════ ROTATE OVERLAY (portrait mode) ══════════════════════════ -->
+<div id="rotate-overlay" class="rotate-overlay">
+  <div class="rotate-content">
+    <div class="rotate-icon">📱</div>
+    <p>Gira tu dispositivo</p>
+    <small>NoteFall Trainer funciona en modo horizontal</small>
+  </div>
+</div>
+
+<!-- ══════════ SPLASH SCREEN ══════════════════════════════════════════ -->
+<div id="splash-screen" class="splash">
+  <canvas id="particles-canvas"></canvas>
+  <div class="splash-content">
+    <div class="splash-logo">
+      <div class="logo-ring ring-1"></div>
+      <div class="logo-ring ring-2"></div>
+      <div class="logo-ring ring-3"></div>
+      <div class="logo-icon">♪</div>
+    </div>
+    <h1 class="splash-title">NOTEFALL<span class="accent">TRAINER</span></h1>
+    <p class="splash-subtitle">Entrenador de Voz e Instrumentos por Micrófono</p>
+    <p class="splash-author">Kabert Studio – LMKE</p>
+    <div class="splash-loading">
+      <div class="loading-bar"><div class="loading-fill" id="loading-fill"></div></div>
+      <span id="loading-text">Iniciando…</span>
+    </div>
+  </div>
+  <button class="skip-btn" id="skip-btn">Omitir intro ›</button>
+</div>
+
+<!-- ══════════ MAIN MENU ══════════════════════════════════════════════ -->
+<div id="main-menu" class="screen hidden">
+  <div class="menu-bg"><canvas id="menu-particles"></canvas></div>
+  <div class="menu-content">
+    <div class="menu-header">
+      <div class="menu-logo">♪</div>
+      <h1>NOTEFALL <span class="accent">TRAINER</span></h1>
+      <p class="menu-sub">Entrenador de Voz e Instrumentos por Micrófono</p>
     </div>
 
-    <div id="main-menu" class="screen">
-        <h1 class="neon-text">MENÚ PRINCIPAL</h1>
-        <div class="menu-buttons">
-            <button id="btn-start" class="btn">Iniciar Entrenamiento</button>
-            <input type="file" id="midi-upload" accept=".mid,.midi" style="display: none;">
-            <button id="btn-load-midi" class="btn">Cargar Archivo MIDI</button>
-            <button id="btn-config" class="btn">Configuración</button>
-            <button id="btn-stats" class="btn">Estadísticas</button>
-            <button id="btn-credits" class="btn">Créditos</button>
+    <!-- MIDI info + preview -->
+    <div id="midi-info-preview" class="midi-preview hidden">
+      <div class="mp-body" id="mp-body"></div>
+      <div class="mp-preview-row">
+        <button class="preview-btn" id="btn-preview-play" title="Escuchar melodía">▶ Preescuchar</button>
+        <div class="preview-progress hidden" id="preview-progress">
+          <div class="preview-bar"><div class="preview-fill" id="preview-fill"></div></div>
+          <button class="preview-stop-btn" id="btn-preview-stop">■</button>
         </div>
-        <div id="track-info" class="info-panel hidden">
-            <h3>Canción Cargada: <span id="song-name">Ninguna</span></h3>
+      </div>
+    </div>
+
+    <!-- Mode selector -->
+    <div class="mode-selector" id="mode-selector">
+      <span class="mode-label">Modo:</span>
+      <button class="mode-btn active" id="mode-normal" data-mode="normal">🎮 Normal</button>
+      <button class="mode-btn" id="mode-training" data-mode="training">🎓 Entrenamiento</button>
+    </div>
+
+    <nav class="menu-nav">
+      <button class="menu-btn primary" id="btn-start">▶ Iniciar Entrenamiento</button>
+      <button class="menu-btn" id="btn-load-midi">⬆ Cargar Archivo MIDI</button>
+      <button class="menu-btn" id="btn-config">⚙ Configuración</button>
+      <button class="menu-btn" id="btn-stats">📊 Estadísticas</button>
+      <button class="menu-btn" id="btn-help">? Ayuda</button>
+      <button class="menu-btn ghost" id="btn-credits">✦ Créditos</button>
+    </nav>
+
+    <!-- MIDI device status -->
+    <div class="midi-status" id="midi-device-status"></div>
+  </div>
+  <input type="file" id="midi-file-input" accept=".mid,.midi" class="hidden" />
+
+  <!-- Fullscreen button (menu) -->
+  <button class="fullscreen-btn" id="btn-fullscreen-menu" title="Pantalla completa">⛶</button>
+</div>
+
+<!-- ══════════ GAME SCREEN ════════════════════════════════════════════ -->
+<div id="game-screen" class="screen hidden">
+
+  <!-- HUD top -->
+  <div class="hud-top">
+    <button class="hud-btn" id="btn-pause">⏸</button>
+    <div class="hud-score">
+      <span class="hud-label">PUNTOS</span>
+      <span class="hud-value" id="score-display">0</span>
+    </div>
+    <div class="hud-accuracy">
+      <span class="hud-label">PRECISIÓN</span>
+      <span class="hud-value" id="accuracy-display">100%</span>
+    </div>
+    <div class="hud-combo">
+      <span class="hud-label">COMBO</span>
+      <span class="hud-value" id="combo-display">0×</span>
+    </div>
+    <div class="hud-song">
+      <span class="hud-label">CANCIÓN</span>
+      <span class="hud-value" id="song-name-display">—</span>
+    </div>
+    <!-- Training mode indicator -->
+    <div class="hud-mode" id="hud-mode-badge"></div>
+    <div class="hud-right">
+      <button class="fullscreen-btn hud-fs" id="btn-fullscreen-game" title="Pantalla completa">⛶</button>
+      <button class="hud-btn" id="btn-quit-game">✕</button>
+    </div>
+  </div>
+
+  <!-- Notefall canvas -->
+  <div class="game-area">
+    <canvas id="notefall-canvas"></canvas>
+
+    <!-- Training: current note display (big) -->
+    <div class="training-note-display hidden" id="training-note-display">
+      <div class="tnd-label">Canta esta nota</div>
+      <div class="tnd-note" id="tnd-note">C4</div>
+      <div class="tnd-freq" id="tnd-freq">261 Hz</div>
+      <button class="tnd-preview-btn" id="tnd-preview-btn" title="Escuchar nota">🔊</button>
+      <button class="tnd-skip-btn" id="tnd-skip-btn">Siguiente →</button>
+    </div>
+
+    <!-- Pitch feedback -->
+    <div class="pitch-feedback" id="pitch-feedback">
+      <div class="pf-note" id="pf-note">—</div>
+      <div class="pf-meter">
+        <div class="pf-scale">
+          <span class="pf-label-l">♭</span>
+          <div class="pf-track">
+            <div class="pf-needle" id="pf-needle"></div>
+            <div class="pf-center-line"></div>
+          </div>
+          <span class="pf-label-r">♯</span>
         </div>
+        <div class="pf-cents" id="pf-cents">0¢</div>
+      </div>
+      <div class="pf-status" id="pf-status">Esperando audio…</div>
     </div>
 
-    <div id="game-screen" class="screen">
-        <div class="hud">
-            <div class="score-panel">
-                Puntaje: <span id="score">0</span> | Combo: <span id="combo">0</span>
-            </div>
-            <div class="tuner-panel">
-                <div class="tuner-gauge">
-                    <div id="tuner-needle"></div>
-                </div>
-                <div class="tuner-text">
-                    Nota: <span id="current-note">--</span> | <span id="cents-dev">0</span> cents
-                </div>
-            </div>
-            <div class="feedback" id="feedback-text"></div>
-        </div>
-        <canvas id="game-canvas"></canvas>
-        <button id="btn-exit-game" class="btn-small">Salir</button>
-    </div>
+    <!-- Hit feedback -->
+    <div class="hit-feedback" id="hit-feedback"></div>
+  </div>
 
-    <div id="credits-screen" class="screen">
-        <h2 class="neon-text">CRÉDITOS</h2>
-        <p><strong>Desarrollo y Dirección:</strong> Kabert Studio - LMKE</p>
-        <p><strong>Equipo de Producción y Testing:</strong><br>
-        Cielo Imaña<br>
-        Luan Ortiz<br>
-        Eithan Herrera<br>
-        Jair Coyo</p>
-        <button id="btn-back-credits" class="btn">Volver</button>
+  <!-- Piano keyboard bottom -->
+  <div class="piano-container">
+    <canvas id="piano-canvas"></canvas>
+    <!-- PC keyboard hint overlay -->
+    <div class="piano-hint" id="piano-hint">
+      <span class="hint-label">Teclado PC: Q W E R T Y U I O P (C4→E5) | 2 3 5 6 7 9 0 (sostenidos)</span>
     </div>
+  </div>
+</div>
 
-    <script src="js/stats.js"></script>
-    <script src="js/audio.js"></script>
-    <script src="js/midi.js"></script>
-    <script src="js/graphics.js"></script>
-    <script src="js/main.js"></script>
+<!-- ══════════ PAUSE MODAL ════════════════════════════════════════════ -->
+<div id="pause-modal" class="modal hidden">
+  <div class="modal-card">
+    <h2>Pausa</h2>
+    <button class="menu-btn primary" id="btn-resume">▶ Continuar</button>
+    <button class="menu-btn" id="btn-restart">↺ Reiniciar</button>
+    <button class="menu-btn ghost" id="btn-quit-pause">✕ Salir al menú</button>
+  </div>
+</div>
+
+<!-- ══════════ RESULTS MODAL ══════════════════════════════════════════ -->
+<div id="results-modal" class="modal hidden">
+  <div class="modal-card wide">
+    <h2 class="results-title">Resultado Final</h2>
+    <div class="results-grid">
+      <div class="result-item"><span class="ri-label">Puntuación</span><span class="ri-val" id="res-score">0</span></div>
+      <div class="result-item"><span class="ri-label">Precisión</span><span class="ri-val" id="res-accuracy">0%</span></div>
+      <div class="result-item"><span class="ri-label">Mejor combo</span><span class="ri-val" id="res-combo">0</span></div>
+      <div class="result-item"><span class="ri-label">Perfect</span><span class="ri-val perfect" id="res-perfect">0</span></div>
+      <div class="result-item"><span class="ri-label">Great</span><span class="ri-val great" id="res-great">0</span></div>
+      <div class="result-item"><span class="ri-label">Good</span><span class="ri-val good" id="res-good">0</span></div>
+      <div class="result-item"><span class="ri-label">Miss / Skip</span><span class="ri-val miss" id="res-miss">0</span></div>
+      <div class="result-item"><span class="ri-label">Tiempo</span><span class="ri-val" id="res-time">0s</span></div>
+    </div>
+    <div class="rank-display" id="rank-display">S</div>
+    <div class="results-buttons">
+      <button class="menu-btn primary" id="btn-play-again">↺ Jugar de nuevo</button>
+      <button class="menu-btn ghost" id="btn-results-menu">Menú principal</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ CONFIG MODAL ═══════════════════════════════════════════ -->
+<div id="config-modal" class="modal hidden">
+  <div class="modal-card wide">
+    <h2>Configuración</h2>
+    <div class="config-grid">
+      <label>Sensibilidad del micrófono
+        <input type="range" id="cfg-sensitivity" min="0.01" max="0.5" step="0.01" value="0.05" />
+        <span class="cfg-val" id="cfg-sensitivity-val">0.05</span>
+      </label>
+      <label>Tolerancia en cents
+        <input type="range" id="cfg-tolerance" min="10" max="100" step="5" value="30" />
+        <span class="cfg-val" id="cfg-tolerance-val">30¢</span>
+      </label>
+      <label>Velocidad de reproducción
+        <input type="range" id="cfg-speed" min="0.25" max="2" step="0.25" value="1" />
+        <span class="cfg-val" id="cfg-speed-val">1×</span>
+      </label>
+      <label>Volumen preescucha
+        <input type="range" id="cfg-metronome" min="0" max="1" step="0.1" value="0.4" />
+        <span class="cfg-val" id="cfg-metronome-val">0.4</span>
+      </label>
+      <label>Tiempo mínimo para validar nota (modo entrenamiento, seg)
+        <input type="range" id="cfg-hold-time" min="0.3" max="3" step="0.1" value="0.8" />
+        <span class="cfg-val" id="cfg-hold-time-val">0.8s</span>
+      </label>
+      <label>Tema visual
+        <select id="cfg-theme">
+          <option value="neon">Neon Dark</option>
+          <option value="cyberpunk">Cyberpunk</option>
+          <option value="classic">Classic</option>
+          <option value="aurora">Aurora</option>
+        </select>
+      </label>
+      <label>Efectos visuales
+        <input type="checkbox" id="cfg-effects" checked />
+      </label>
+      <label>Sonido al presionar piano
+        <input type="checkbox" id="cfg-piano-sound" checked />
+      </label>
+    </div>
+    <button class="menu-btn primary" id="btn-config-save">Guardar</button>
+    <button class="menu-btn ghost" id="btn-config-close">Cerrar</button>
+  </div>
+</div>
+
+<!-- ══════════ STATS MODAL ════════════════════════════════════════════ -->
+<div id="stats-modal" class="modal hidden">
+  <div class="modal-card wide">
+    <h2>Estadísticas</h2>
+    <div id="stats-content" class="stats-content"></div>
+    <button class="menu-btn ghost" id="btn-stats-close">Cerrar</button>
+  </div>
+</div>
+
+<!-- ══════════ HELP MODAL ═════════════════════════════════════════════ -->
+<div id="help-modal" class="modal hidden">
+  <div class="modal-card wide">
+    <h2>Ayuda</h2>
+    <div class="help-content">
+      <h3>🎮 Modo Normal</h3>
+      <p>Las notas caen en tiempo real. Canta o toca cada nota cuando llega a la línea brillante. La puntuación se basa en precisión y tiempo de reacción.</p>
+      <h3>🎓 Modo Entrenamiento</h3>
+      <p>La melodía se detiene en cada nota y espera a que la cantes correctamente. Una vez afinado durante el tiempo requerido, avanza automáticamente. Si no puedes tocar una nota, usa <strong>Siguiente →</strong> para saltarla.</p>
+      <h3>🔊 Preescuchar melodía</h3>
+      <p>Carga un archivo MIDI y presiona <strong>Preescuchar</strong> para escuchar la melodía completa antes de intentarla.</p>
+      <h3>🎹 Piano interactivo</h3>
+      <ul>
+        <li><strong>Teclado MIDI:</strong> conecta cualquier dispositivo MIDI y se detecta automáticamente.</li>
+        <li><strong>Teclado PC (fila Q):</strong> Q W E R T Y U I O P → C4 a E5</li>
+        <li><strong>Sostenidos (fila números):</strong> 2 3 5 6 7 9 0</li>
+        <li><strong>Octava baja (fila A):</strong> A S D F G H J K L → C3 a D4</li>
+      </ul>
+      <h3>Puntuación</h3>
+      <ul>
+        <li><span class="perfect">Perfect</span> — dentro de ±15¢</li>
+        <li><span class="great">Great</span> — dentro de ±30¢</li>
+        <li><span class="good">Good</span> — dentro de tolerancia</li>
+        <li><span class="miss">Miss/Skip</span> — nota omitida o fuera de rango</li>
+      </ul>
+    </div>
+    <button class="menu-btn ghost" id="btn-help-close">Cerrar</button>
+  </div>
+</div>
+
+<!-- ══════════ CREDITS MODAL ══════════════════════════════════════════ -->
+<div id="credits-modal" class="modal hidden">
+  <div class="modal-card">
+    <h2>Créditos</h2>
+    <div class="credits-content">
+      <div class="credits-logo">♪</div>
+      <h3>NoteFall Trainer</h3>
+      <p class="credits-studio">Kabert Studio – LMKE</p>
+      <hr class="credits-divider" />
+      <ul>
+        <li>Web Audio API + AudioWorklet</li>
+        <li>YIN / MPM Pitch Detection</li>
+        <li>Web MIDI API</li>
+        <li>@tonejs/midi — Parser MIDI</li>
+        <li>Canvas 2D API — Motor gráfico</li>
+        <li>Web Fonts: Orbitron, Inter, JetBrains Mono</li>
+      </ul>
+      <p class="credits-copy">© 2024 Kabert Studio. Todos los derechos reservados.</p>
+    </div>
+    <button class="menu-btn ghost" id="btn-credits-close">Cerrar</button>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.28/build/Midi.js"></script>
+<script type="module" src="js/main.js"></script>
 </body>
 </html>
